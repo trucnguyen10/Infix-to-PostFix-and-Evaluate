@@ -1,0 +1,139 @@
+#include <iostream>
+#include <stack>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <cmath>  
+using namespace std;
+
+vector<string> split(const string &s, char delimiter) { 
+  stringstream ss(s); 
+  string item; 
+  vector<string> result; 
+  while (getline(ss, item, delimiter)) { 
+    result.push_back(item); 
+  } 
+  return result; 
+} 
+int pri(string a)
+{
+    if (a == "^")
+        return 3;
+    else if (a == "/" || a == "*")
+        return 2;
+    else if (a == "+" || a == "-")
+        return 1;
+    else
+        return -1;
+}
+// This funtion I learn from GOOGLE to check if a string is a number or not
+bool isNumber(const string& str)
+{
+    for (char const &c : str) {
+        if (std::isdigit(c) == 0) return false;
+    }
+    return true;
+} 
+vector<string> in2pos(vector<string> in){
+  stack<string> s; 
+  vector<string> pos;
+  for (int i = 0; i < in.size(); i++) {
+		string tem = in[i];
+		if (isNumber(in[i]))
+			pos.push_back(in[i]);
+    else if(s.empty())
+    {
+      s.push(in[i]);
+    }
+		else if (tem == "(") {
+			s.push("(");
+      }
+		else if (tem == ")") {
+			 while (!s.empty())
+			{
+				if(s.top() == "("){
+					break;
+				} else {
+					pos.push_back(s.top());    
+					s.pop();
+				}
+			}
+			//cout << s.top() << endl;
+			s.pop();
+			//cout << s.empty() << endl;
+		}
+		else {
+			
+			while (!s.empty()) {
+				if(pri(in[i]) <= pri(s.top())){;
+					pos.push_back(s.top());
+					s.pop();
+				} else {
+					break;
+				}		
+			}
+			
+			s.push(in[i]);        
+		}
+	}
+
+  while (!s.empty()) {
+		pos.push_back(s.top());
+		s.pop();
+	}
+
+	return pos;
+}
+int eval(vector<string> pos) {
+  stack<int> s; 
+    for(int i=0;i<pos.size();i++){
+        if (isNumber(pos[i]))
+        {
+        int num;
+        num = std::stoi(pos[i]);
+        s.push(num); // reference 
+        }
+        else{
+            int op2 = s.top();
+            s.pop();
+            int op1 = s.top();
+            s.pop();
+            if(pos[i]=="+")
+                s.push(op1+op2);
+            else if(pos[i]=="-")
+                s.push(op1-op2);
+            else if(pos[i]=="*")
+                s.push(op1*op2);
+            else if(pos[i]=="/")
+                s.push(op1/op2);
+            else if(pos[i]=="^")
+                s.push((int)(pow((double)op1, (double)op2)));
+        }   
+    }
+  return s.top();
+}
+bool check(vector<string> b){
+for(int i = 0; i < b.size(); i++){
+    if(b[i] != "+" && b[i] != "-" && b[i] != "^" && b[i] != "(" && b[i] != ")" && b[i] != "*" && b[i] != "/" && !isNumber(b[i])) return false;
+}
+  return true;
+}
+int main(){ 
+  string in;
+  cout << " Please enter your expression: " << endl;
+  getline(cin, in);
+  vector<string> b = split(in, ' ');
+  if(check(b))
+  {
+  	vector<string> result = in2pos(b);
+  	cout << "The postfix expression is: " ;
+  	for(int i = 0; i < result.size(); i++)
+  	cout << result[i] << " ";
+  	int result2 = eval(result);
+  	cout << "" << endl;
+  	cout << "The value of your expression is: " << result2 << endl; 
+  }
+  else cout << "Invalid Input" << endl;
+  }
+
+
